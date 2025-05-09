@@ -1,0 +1,151 @@
+:root {
+  --ev-1: inset 0 0 2px 0 #ffffff1f, 0 0 2px 0 #0000000d, 0 1px 2px 0 #00000014;
+  --ev-1-5: inset 0 0 2px 0 #ffffff1f, 0 0 2px 0 #0000000d,
+    0 1px 4px 0 #00000014;
+  --ev-2: inset 0 0 2px 0 #ffffff1f, 0 0 2px 0 #0000000d, 0 2px 6px 0 #00000014;
+  --ev-3: inset 0 0 2px 0 #ffffff1f, 0 0 2px 0 #0000000d, 0 4px 12px 0 #00000026;
+}
+
+#reviewer-recommender-container {
+  background-color: #ffffff;
+  border-radius: 6px;
+  padding: 10px 12px 6px;
+  margin: 4px -10px 0;
+  box-shadow: var(--ev-1-5);
+  /* border: 1px solid #d0d7de; */
+}
+
+.reviewer-title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Puts title left, button right if button is direct child */
+  margin-bottom: 4px; /* Replaces title's margin-bottom */
+  padding-bottom: 8px; /* Replaces title's padding-bottom */
+  border-bottom: 1px solid #d0d7de; /* Replaces title's border-bottom */
+}
+
+.reviewer-recommender-title {
+  font-size: 12px;
+  font-weight: 600; /* Bolder */
+  color: var(--fgColor-muted, var(--color-fg-muted)); /* GitHub text color */
+  margin-top: 0;
+  margin-bottom: 0; /* Handled by wrapper */
+  padding-bottom: 0; /* Handled by wrapper */
+  border-bottom: none; /* Handled by wrapper */
+  /* flex-grow: 1; */ /* If using space-between on wrapper and want title to take up space */
+}
+
+.reviewer-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.reviewer-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0; /* More vertical padding */
+  /* border-bottom: 1px solid #eaecef; */
+}
+
+.reviewer-list-item:last-child {
+  border-bottom: none;
+}
+
+.reviewer-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reviewer-avatar {
+  width: 20px; /* Slightly larger avatar */
+  height: 20px;
+  border-radius: 50%;
+}
+
+.reviewer-login {
+  font-size: 12px;
+  color: #24292f;
+  font-weight: 500;
+}
+
+.reviewer-request-btn {
+  background-color: #eef2ff; /* Light lavender/blue background (e.g., Tailwind Indigo-50) */
+  color: #6366f1; /* Medium blue/purple text (e.g., Tailwind Indigo-500) */
+  border: none;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
+}
+
+.reviewer-request-btn:hover {
+  background-color: #e0e7ff; /* Slightly darker background (e.g., Tailwind Indigo-100) */
+  /* border-color: #a5b4fc; */
+  /* color: #6366F1; */ /* Text color remains the same on hover */
+}
+
+/* 
+  Styles for button states when disabled (e.g., "Requesting..." or "Requested!").
+  The .requesting and .requested classes are added by content.js, and the button is also set to disabled=true.
+  So, these states will primarily use the .reviewer-request-btn:disabled style.
+*/
+
+.reviewer-request-btn.requesting {
+  /* Specific styles for "Requesting..." if needed, otherwise relies on :disabled */
+  /* For example, could add a spinner here via ::before pseudo-element if desired */
+}
+
+.reviewer-request-btn.requested {
+  /* Specific styles for "Requested!" if a unique look beyond :disabled is desired */
+  /* For now, it will use the :disabled style below */
+}
+
+.reviewer-request-btn:disabled {
+  background-color: #f6f8fa; /* GitHub default disabled button background */
+  color: #6b7280; /* GitHub default disabled button text */
+  /* border-color: #d1d5db; */
+  cursor: default;
+  opacity: 1; /* Overriding previous opacity, relying on colors for disabled look */
+}
+
+/* Updated Styles for the Request All button to be small and inline */
+.reviewer-request-all-btn {
+  background-color: #6366f1; /* Primary button color - solid blue/purple */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 8px; /* Smaller padding */
+  font-size: 12px; /* Smaller font size */
+  font-weight: 500; /* Adjusted font weight */
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  display: inline-block; /* To sit next to the title */
+  width: auto; /* Not full width */
+  margin-left: 8px; /* Space from the title, if title is also inline-block/flex item */
+  vertical-align: middle; /* Align with title text if title is inline or inline-block */
+}
+
+.reviewer-request-all-btn:hover {
+  background-color: #4f46e5; /* Darker shade for hover, e.g., Tailwind Indigo-700 */
+}
+
+.reviewer-request-all-btn:disabled {
+  background-color: #a5b4fc; /* Lighter, disabled version of primary, e.g., Tailwind Indigo-300 */
+  color: #e0e7ff; /* Lighter text for disabled state */
+  cursor: default;
+}
+
+.reviewer-no-suggestions {
+  color: #57606a;
+  font-size: 12px;
+  padding: 8px 0;
+  margin: 0;
+}
+
+/* TODO: Add styles for the reviewer suggestions UI */
