@@ -1,11 +1,9 @@
-// background.js for Reviewer Recommender
-
 const CACHE_TTL_MINUTES_SUGGESTIONS = 15;
 const CACHE_TTL_MINUTES_PR_DETAILS = 60;
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("Reviewer Recommender installed/updated.");
-  // On first install, or if PAT is missing, guide user to options.
+
   chrome.storage.sync.get(["githubPAT"], function (result) {
     if (!result.githubPAT) {
       console.log("GitHub PAT not found. Opening options page for setup.");
@@ -34,7 +32,6 @@ async function getAuthToken() {
   });
 }
 
-// Cache Helper Functions
 async function getFromCache(key) {
   try {
     const result = await chrome.storage.local.get(key);
@@ -193,7 +190,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })();
     return true;
   }
-  // TODO: Add logic to store newly requested reviewers (if we decide to combine strategies).
 });
 
 async function fetchRecentReviewersViaSearch(owner, repo, prAuthor) {
@@ -345,17 +341,3 @@ async function postReviewRequest(owner, repo, prNumber, reviewerLogin) {
     );
   }
 }
-
-// Remove or comment out the old storeReviewer function as it's not used with the API approach
-/*
-async function storeReviewer(author, reviewer) {
-  const key = `reviewers_${author}`;
-  const result = await chrome.storage.local.get([key]);
-  const reviewers = result[key] || [];
-  if (!reviewers.find(r => r.login === reviewer.login)) {
-    reviewers.push(reviewer);
-    await chrome.storage.local.set({ [key]: reviewers });
-    console.log(`Stored reviewer ${reviewer.login} for author ${author}`);
-  }
-}
-*/

@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const saveButton = document.getElementById("saveButton");
   const statusMessage = document.getElementById("statusMessage");
 
-  // Load the saved PAT when the options page opens
   chrome.storage.sync.get(["githubPAT"], function (result) {
     if (result.githubPAT) {
       patInput.value = result.githubPAT;
@@ -27,7 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
     } else {
-      // Optionally, clear the stored token if input is empty
       chrome.storage.sync.remove("githubPAT", function () {
         if (chrome.runtime.lastError) {
           statusMessage.textContent =

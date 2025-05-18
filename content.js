@@ -1,5 +1,3 @@
-// content.js for Reviewer Recommender
-
 function getLoggedInUser() {
   const loggedInUserMetaTag = document.querySelector(
     'meta[name="octolytics-actor-login"]'
