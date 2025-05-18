@@ -20,7 +20,12 @@ function getRepoInfo() {
   return null;
 }
 
-function displayReviewerSuggestions(reviewers, message = null) {
+function displayReviewerSuggestions(
+  reviewers,
+  message = null,
+  currentRequestedReviewers = [],
+  submittedReviewerLogins = []
+) {
   const sidebar = document.querySelector("#partial-discussion-sidebar");
   if (!sidebar) {
     console.warn("Sidebar not found, cannot display suggestions.");
@@ -107,6 +112,24 @@ function displayReviewerSuggestions(reviewers, message = null) {
       requestButton.textContent = "Request";
       requestButton.className = "reviewer-request-btn";
       requestButton.setAttribute("data-login", reviewer.login);
+
+      const isAlreadyRequested = currentRequestedReviewers.some(
+        (r) => r.login === reviewer.login
+      );
+      const hasAlreadyReviewed = submittedReviewerLogins.includes(
+        reviewer.login
+      );
+
+      if (isAlreadyRequested) {
+        requestButton.disabled = true;
+        requestButton.textContent = "Requested";
+        requestButton.classList.add("requested");
+      } else if (hasAlreadyReviewed) {
+        requestButton.disabled = true;
+        requestButton.textContent = "Reviewed";
+        requestButton.classList.add("reviewed");
+      }
+
       requestButton.onclick = function () {
         const repoInfoForRequest = getRepoInfo();
         if (!repoInfoForRequest || !repoInfoForRequest.prNumber) {
@@ -226,11 +249,18 @@ function main() {
               );
             } else if (response.reviewers) {
               if (response.reviewers.length > 0) {
-                displayReviewerSuggestions(response.reviewers);
+                displayReviewerSuggestions(
+                  response.reviewers,
+                  null,
+                  response.currentRequestedReviewers || [],
+                  response.submittedReviewerLogins || []
+                );
               } else {
                 displayReviewerSuggestions(
                   [],
-                  "No relevant reviewers found for your PR."
+                  "No relevant reviewers found for your PR.",
+                  response.currentRequestedReviewers || [],
+                  response.submittedReviewerLogins || []
                 );
               }
             } else {

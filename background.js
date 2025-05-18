@@ -87,6 +87,47 @@ async function fetchPrDetails(owner, repo, prNumber) {
   return prData;
 }
 
+async function fetchSubmittedReviews(owner, repo, prNumber, authToken) {
+  const submittedReviewsUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/reviews`;
+  console.log(
+    `API: Fetching submitted reviews for ${owner}/${repo}#${prNumber}`
+  );
+  try {
+    const response = await fetch(submittedReviewsUrl, {
+      headers: {
+        Accept: "application/vnd.github.v3+json",
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `API Error fetching submitted reviews for ${owner}/${repo}#${prNumber}: ${response.status} ${errorText}`
+      );
+      // Return empty array on error to not block suggestion flow entirely
+      return [];
+    }
+    const reviewsData = await response.json();
+    if (reviewsData && Array.isArray(reviewsData)) {
+      const prAuthorLogin = (await fetchPrDetails(owner, repo, prNumber))?.user
+        ?.login;
+      return reviewsData
+        .map((review) => review.user && review.user.login)
+        .filter(
+          (login) =>
+            login && login !== prAuthorLogin && !login.endsWith("[bot]")
+        );
+    }
+    return [];
+  } catch (error) {
+    console.error(
+      `Network/fetch error for submitted reviews ${owner}/${repo}#${prNumber}:`,
+      error.message
+    );
+    return []; // Gracefully handle network errors
+  }
+}
+
 // Listener for messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getPrDetailsAndSuggestIfOwnPR") {
@@ -104,12 +145,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const prData = await fetchPrDetails(owner, repo, prNumber);
         const actualPrAuthor = prData.user.login;
         if (loggedInUser === actualPrAuthor) {
-          const reviewers = await fetchRecentReviewersViaSearch(
+          const authToken = await getAuthToken(); // Ensure authToken is available
+          const suggestedReviewers = await fetchRecentReviewersViaSearch(
             owner,
             repo,
             actualPrAuthor
           );
-          sendResponse({ suggestionsApplicable: true, reviewers: reviewers });
+          const submittedReviewerLogins = await fetchSubmittedReviews(
+            owner,
+            repo,
+            prNumber,
+            authToken
+          );
+          sendResponse({
+            suggestionsApplicable: true,
+            reviewers: suggestedReviewers,
+            currentRequestedReviewers: prData.requested_reviewers || [], // Ensure it's an array
+            submittedReviewerLogins: submittedReviewerLogins || [], // Ensure it's an array
+          });
         } else {
           sendResponse({ suggestionsApplicable: false });
         }
