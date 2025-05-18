@@ -41,7 +41,7 @@ _(Screenshot: Reviewer list, avatars, "Request" / "Request All" buttons)_
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome. Please feel free to check the [issues page](https://github.com/your-username/reviewer-recommender/issues) (replace with actual link if available).
+Contributions, issues, and feature requests are welcome.
 
 ---
 
