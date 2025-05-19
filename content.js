@@ -71,24 +71,45 @@ function displayReviewerSuggestions(
       const requestAllButton = document.createElement("button");
       requestAllButton.textContent = "Request All";
       requestAllButton.className = "reviewer-request-all-btn";
+
+      let requestAllDebounceTimer = null;
+      const REQUEST_ALL_DEBOUNCE_DELAY = 500; // ms
+
       requestAllButton.onclick = function () {
-        this.disabled = true;
-        this.textContent = "Sending...";
-        const individualRequestButtons = suggestionsContainer.querySelectorAll(
-          ".reviewer-request-btn:not(:disabled)"
-        );
-        let clickCount = 0;
-        individualRequestButtons.forEach((btn) => {
-          if (!btn.disabled) {
-            btn.click();
-            clickCount++;
+        clearTimeout(requestAllDebounceTimer);
+        requestAllDebounceTimer = setTimeout(() => {
+          this.disabled = true;
+          this.textContent = "Sending...";
+          const individualRequestButtons =
+            suggestionsContainer.querySelectorAll(
+              ".reviewer-request-btn:not(:disabled)"
+            );
+          let clickCount = 0;
+          individualRequestButtons.forEach((btn) => {
+            if (!btn.disabled) {
+              btn.click(); // This will trigger individual requests with their own logic
+              clickCount++;
+            }
+          });
+
+          // Update button text based on actual clicks initiated.
+          // The individual buttons will handle their own state ("Requested!", "Error").
+          if (clickCount > 0) {
+            this.textContent = `Processing ${clickCount}...`;
+            // We might need a more sophisticated way to know when all are truly done
+            // For now, revert after a delay, assuming operations are relatively quick.
+            setTimeout(() => {
+              this.disabled = false;
+              this.textContent = "Request All";
+            }, 3000 + clickCount * 500); // Rough estimate for completion
+          } else {
+            this.textContent = "Done (No new requests)";
+            setTimeout(() => {
+              this.disabled = false;
+              this.textContent = "Request All";
+            }, 2000);
           }
-        });
-        if (clickCount > 0) {
-          this.textContent = `Sent ${clickCount}`;
-        } else {
-          this.textContent = "Done";
-        }
+        }, REQUEST_ALL_DEBOUNCE_DELAY);
       };
       titleWrapper.appendChild(requestAllButton);
     }
@@ -137,6 +158,14 @@ function displayReviewerSuggestions(
           alert("Error: Could not determine PR details for request.");
           return;
         }
+        const currentUser = getLoggedInUser(); // Get current user for prAuthor
+        if (!currentUser) {
+          console.error(
+            "Could not determine logged in user to attribute prAuthor for cache clearing."
+          );
+          // Optionally, alert the user or proceed without prAuthor, though cache clearing for suggestions might be skipped by background
+        }
+
         requestButton.disabled = true;
         requestButton.textContent = "Requesting...";
         requestButton.classList.add("requesting");
@@ -148,6 +177,7 @@ function displayReviewerSuggestions(
             repo: repoInfoForRequest.repo,
             prNumber: repoInfoForRequest.prNumber,
             reviewerLogin: reviewer.login,
+            prAuthor: currentUser, // Pass prAuthor
           },
           (response) => {
             requestButton.classList.remove("requesting");

@@ -215,12 +215,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })();
     return true;
   } else if (request.action === "requestReview") {
-    const { owner, repo, prNumber, reviewerLogin } = request;
-    if (!owner || !repo || !prNumber || !reviewerLogin) {
+    const { owner, repo, prNumber, reviewerLogin, prAuthor } = request;
+    if (!owner || !repo || !prNumber || !reviewerLogin || !prAuthor) {
       console.error("Missing parameters for requestReview action.");
       sendResponse({
         success: false,
-        error: "Missing parameters for review request.",
+        error:
+          "Missing parameters for review request (owner, repo, prNumber, reviewerLogin, prAuthor).",
       });
       return false;
     }
@@ -230,7 +231,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           owner,
           repo,
           prNumber,
-          reviewerLogin
+          reviewerLogin,
+          prAuthor
         );
         sendResponse(responseData);
       } catch (error) {
@@ -353,7 +355,13 @@ async function fetchRecentReviewersViaSearch(owner, repo, prAuthor) {
   return suggestedReviewers;
 }
 
-async function postReviewRequest(owner, repo, prNumber, reviewerLogin) {
+async function postReviewRequest(
+  owner,
+  repo,
+  prNumber,
+  reviewerLogin,
+  prAuthor
+) {
   const authToken = await getAuthToken();
   const apiUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/requested_reviewers`;
   console.log(
@@ -374,6 +382,14 @@ async function postReviewRequest(owner, repo, prNumber, reviewerLogin) {
       (r) => r.login === reviewerLogin
     );
     if (isRequested) {
+      // Clear relevant caches on success
+      const prDetailsCacheKey = `pr_details_${owner}_${repo}_${prNumber}`;
+      const suggestionsCacheKey = `suggestions_${owner}_${repo}_${prAuthor}`;
+      console.log(`Clearing cache for ${prDetailsCacheKey}`);
+      await chrome.storage.local.remove(prDetailsCacheKey);
+      console.log(`Clearing cache for ${suggestionsCacheKey}`);
+      await chrome.storage.local.remove(suggestionsCacheKey);
+
       return { success: true };
     } else {
       console.warn(
